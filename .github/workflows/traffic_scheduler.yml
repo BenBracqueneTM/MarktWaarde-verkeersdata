@@ -1,0 +1,42 @@
+name: Hourly Traffic Monitor
+
+on:
+  schedule:
+    # Runs at the top of every hour (e.g., 10:00, 11:00)
+    - cron: '0 * * * *'
+  workflow_dispatch: # This adds a button so you can test it manually!
+
+jobs:
+  run-monitor:
+    runs-on: ubuntu-latest
+    
+    # Required permission to push the updated CSV back to your repository
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Python Libraries
+        run: pip install requests pandas
+
+      - name: Run Traffic Monitor Script
+        env:
+          # Pulls the secret API key you added in Step 1
+          TOMTOM_API_KEY: ${{ secrets.TOMTOM_API_KEY }}
+        run: python traffic_monitor.py
+
+      - name: Commit and Push Updated CSV
+        run: |
+          git config --global user.name "Traffic Bot"
+          git config --global user.email "bot@traffic.local"
+          git add traffic_data.csv
+          # Only commits if the file has actually changed
+          git diff --quiet && git diff --staged --quiet || git commit -m "📊 Appended new hourly traffic data"
+          git push
