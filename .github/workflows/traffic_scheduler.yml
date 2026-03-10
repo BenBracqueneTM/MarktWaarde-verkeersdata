@@ -2,9 +2,10 @@ name: Hourly Traffic Monitor
 
 on:
   schedule:
-    # Runs at the top of every hour (e.g., 10:00, 11:00)
-    - cron: '0 * * * *'
-  workflow_dispatch: # This adds a button so you can test it manually!
+    # Runs at minute 0 past every hour from 5 through 20 (UTC)
+    # (Belgium: 06:00 to 21:00 in Winter / 07:00 to 22:00 in Summer)
+    - cron: '0 5-20 * * *'
+  workflow_dispatch: # Keeps your manual test button!
 
 jobs:
   run-monitor:
