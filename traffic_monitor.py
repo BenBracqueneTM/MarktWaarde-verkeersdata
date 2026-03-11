@@ -3,6 +3,7 @@ import requests
 import time
 from datetime import datetime
 import pandas as pd
+import pytz
 
 # --- 1. SECURE KEY RETRIEVAL (GitHub Actions) ---
 API_KEY = os.environ.get('TOMTOM_API_KEY')
@@ -44,18 +45,21 @@ ALL_ROUTES = {
         "Out 4": {"name1": "Indigo Kathedraal", "name2": "Goswin de Stassartstraat", "loc1": "51.0291258,4.4782551", "loc2": "51.0343664,4.4787359"},
         "Out 5": {"name1": "Veemarkt", "name2": "Keizerstraat", "loc1": "51.0293255,4.4840652", "loc2": "51.0290066,4.4882402"},
         "Out 6": {"name1": "Parking Inno", "name2": "Bleekstraat", "loc1": "51.026162,4.4826729", "loc2": "51.0268092,4.4893477"},
+
         "In 1": {"name1": "Hoogstraat", "name2": "Ganzendries", "loc1": "51.0221317,4.4739587", "loc2": "51.0232432,4.4748595"},
         "In 2": {"name1": "Hoogstraat", "name2": "Q-Park Lamot", "loc1": "51.0221645,4.4739853", "loc2": "51.0253552,4.4768889"},
         "In 3": {"name1": "Sint-Katelijnestraat", "name2": "Indigo Grote Markt", "loc1": "51.0340633,4.4755292", "loc2": "51.0281672,4.4791899"},
         "In 4": {"name1": "Sint-Katelijnestraat", "name2": "Indigo Kathedraal", "loc1": "51.0340559,4.4755295", "loc2": "51.0291258,4.4782551"},
         "In 5": {"name1": "Keizerstraat", "name2": "Veemarkt", "loc1": "51.029008,4.4883295", "loc2": "51.0289292,4.485366"},
         "In 6": {"name1": "Zandpoortvest", "name2": "Parking Inno", "loc1": "51.0234471,4.4873008", "loc2": "51.026162,4.4826729"},
+
         "Ring CCW 1": {"name1": "Kon. Astridlaan", "name2": "R12 (Zuid)", "loc1": "51.0280133,4.4700838", "loc2": "51.0206859,4.4780253"},
         "Ring CCW 2": {"name1": "R12 (Zuid)", "name2": "Hendrik Speecqvest", "loc1": "51.020591,4.4790632", "loc2": "51.0214784,4.4861257"},
         "Ring CCW 3": {"name1": "Raghenoplein", "name2": "Frans Halsvest", "loc1": "51.0219261,4.4866119", "loc2": "51.0304135,4.4873214"},
         "Ring CCW 4": {"name1": "Goswin de Stassart", "name2": "Battelsesteenweg", "loc1": "51.0345145,4.478636", "loc2": "51.028313,4.4702088"},
         "Ring CCW 5": {"name1": "Hendrik Speecqvest", "name2": "Hoogstratenplein", "loc1": "51.0217205,4.4866604", "loc2": "51.0290022,4.4891542"},
         "Ring CCW 6": {"name1": "R12 (Noord)", "name2": "Kazerne Dossin", "loc1": "51.0310895,4.4868016", "loc2": "51.0344692,4.4792083"},
+
         "Ring CW 1": {"name1": "Zandpoortvest", "name2": "Stationsstraat", "loc1": "51.0285704,4.4898393", "loc2": "51.0217517,4.4869489"},
         "Ring CW 2": {"name1": "Voochtstraat", "name2": "Raghenoplein", "loc1": "51.028467,4.4893581", "loc2": "51.0223561,4.4867758"}
     }
@@ -64,75 +68,107 @@ ALL_ROUTES = {
 # --- 3. FETCH AND APPEND DATA ---
 def run_traffic_check():
     print("🚦 Checking traffic...")
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Calculate exact Belgian Time (automatically adjusts for summer/winter time!)
+    belgium_tz = pytz.timezone('Europe/Brussels')
+    now = datetime.now(belgium_tz).strftime("%Y-%m-%d %H:%M:%S")
+    
     results =[]
 
     for city, routes in ALL_ROUTES.items():
+        print(f"\n🏙️ Processing {city}...")
+        
+        # Mechelen routes are strict one-way. Other cities are tested bidirectionally.
         is_bidirectional = (city != "Mechelen")
         
         for route_id, data in routes.items():
-            directions = [
+            
+            # Forward direction
+            directions =[
                 {"label": f"{route_id}: {data['name1']} -> {data['name2']}", "start": data["loc1"], "end": data["loc2"]}
             ]
+            
+            # Add Reverse direction if it's not Mechelen
             if is_bidirectional:
                 directions.append(
                     {"label": f"{route_id}: {data['name2']} -> {data['name1']}", "start": data["loc2"], "end": data["loc1"]}
                 )
                 
-            temp_results =[]
+            temp_results = []
+            
             for direction in directions:
                 route_label = direction["label"]
                 start_coord = direction["start"]
                 end_coord = direction["end"]
                 
+                # Create a Google Maps directions link for easy checking in the CSV
                 gmaps_link = f"https://www.google.com/maps/dir/?api=1&origin={start_coord}&destination={end_coord}&travelmode=driving"
+                
                 url = f"https://api.tomtom.com/routing/1/calculateRoute/{start_coord}:{end_coord}/json"
-                params = {"key": API_KEY, "traffic": "true", "routeType": "fastest"}
+                params = {
+                    "key": API_KEY,
+                    "traffic": "true",
+                    "routeType": "fastest"
+                }
                 
                 try:
                     response = requests.get(url, params=params)
                     response.raise_for_status() 
-                    summary = response.json()['routes'][0]['summary']
+                    api_data = response.json()
                     
-                    travel_min = round(summary.get('travelTimeInSeconds', 0) / 60, 1)
-                    delay_min = round(summary.get('trafficDelayInSeconds', 0) / 60, 1)
+                    summary = api_data['routes'][0]['summary']
+                    travel_time_sec = summary.get('travelTimeInSeconds', 0)
+                    traffic_delay_sec = summary.get('trafficDelayInSeconds', 0)
+                    
+                    travel_time_min = round(travel_time_sec / 60, 1)
+                    traffic_delay_min = round(traffic_delay_sec / 60, 1)
                     
                     temp_results.append({
                         "Timestamp": now,
                         "City": city,
                         "Route": route_label,
-                        "Travel Time (min)": travel_min,
-                        "Traffic Delay (min)": delay_min,
-                        "Warning": "",
+                        "Travel Time (min)": travel_time_min,
+                        "Traffic Delay (min)": traffic_delay_min,
+                        "Warning": "", 
                         "Google Maps Link": gmaps_link
                     })
-                    print(f"✅ Checked: {route_label}")
-                except Exception as e:
-                    print(f"❌ Failed {route_label}: {e}")
                     
-                time.sleep(1) # Prevent API Rate Limit
+                    print(f"  ✅ Checked: {route_label} ({travel_time_min} min)")
+                    
+                except Exception as e:
+                    print(f"  ❌ Failed {route_label}: {e}")
+                    
+                # PAUSE FOR 1 SECOND TO PREVENT RATE LIMIT (429 ERROR)
+                time.sleep(1)
                 
-            # Deviation check for bidirectional routes
+            # --- DEVIATION CHECK ---
             if is_bidirectional and len(temp_results) == 2:
-                t1, t2 = temp_results[0]["Travel Time (min)"], temp_results[1]["Travel Time (min)"]
+                t1 = temp_results[0]["Travel Time (min)"]
+                t2 = temp_results[1]["Travel Time (min)"]
+                
                 if t1 > 0 and t2 > 0:
-                    diff, ratio = abs(t1 - t2), max(t1, t2) / min(t1, t2)
+                    diff = abs(t1 - t2)
+                    ratio = max(t1, t2) / min(t1, t2)
+                    
+                    # Flag if the difference is more than 3 minutes AND at least 40% longer
                     if diff >= 3.0 and ratio >= 1.4:
-                        warn = f"⚠️ Deviation (Diff: {round(diff, 1)} min)"
-                        temp_results[0]["Warning"] = warn
-                        temp_results[1]["Warning"] = warn
+                        warning_msg = f"⚠️ Deviation detected (Diff: {round(diff, 1)} min)"
+                        temp_results[0]["Warning"] = warning_msg
+                        temp_results[1]["Warning"] = warning_msg
+                        print(f"     {warning_msg} -> Check Google Maps links!")
 
+            # Push this route's temp_results to the main list
             results.extend(temp_results)
 
-    # Append to CSV logic
+    # Output to CSV
     if results:
         df = pd.DataFrame(results)
         csv_filename = 'traffic_data.csv'
         
-        # Check if file exists to determine if we need to write the header row
+        # Check if the file already exists in the repository
         file_exists = os.path.isfile(csv_filename)
         
-        # mode='a' appends to the file instead of overwriting it!
+        # Append mode ('a') safely adds rows to the bottom of the CSV
         df.to_csv(csv_filename, mode='a', header=not file_exists, index=False)
         print(f"\n💾 Data successfully appended to '{csv_filename}'.")
 
