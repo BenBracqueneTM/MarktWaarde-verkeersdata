@@ -1,10 +1,6 @@
 name: Hourly Traffic Monitor
 
 on:
-  schedule:
-    # Runs at 14 minutes past the hour from 05:00 to 20:00 UTC.
-    # This completely avoids the massive GitHub queue at the top of the hour!
-    - cron: '14,44 6-20 * * *'
   workflow_dispatch: 
 
 env:
