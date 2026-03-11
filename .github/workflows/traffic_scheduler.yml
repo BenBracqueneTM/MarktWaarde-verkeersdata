@@ -2,10 +2,10 @@ name: Hourly Traffic Monitor
 
 on:
   schedule:
-    # Runs at minute 0 past every hour from 5 through 20 (UTC)
-    # (Belgium: 06:00 to 21:00 in Winter / 07:00 to 22:00 in Summer)
-    - cron: '0 5-20 * * *'
-  workflow_dispatch: # Keeps your manual test button!
+    # Runs at 14 minutes past the hour from 06:00 to 20:00 UTC.
+    # This completely avoids the massive GitHub queue at the top of the hour!
+    - cron: '14 6-20 * * *'
+  workflow_dispatch: 
 
 jobs:
   run-monitor:
@@ -25,11 +25,12 @@ jobs:
           python-version: '3.10'
 
       - name: Install Python Libraries
-        run: pip install requests pandas
+        # We added pytz here to handle exact Belgian timezones!
+        run: pip install requests pandas pytz
 
       - name: Run Traffic Monitor Script
         env:
-          # Pulls the secret API key you added in Step 1
+          # Pulls the secret API key you added in GitHub Settings > Secrets
           TOMTOM_API_KEY: ${{ secrets.TOMTOM_API_KEY }}
         run: python traffic_monitor.py
 
