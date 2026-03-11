@@ -38,6 +38,9 @@ jobs:
           git config --global user.name "Traffic Bot"
           git config --global user.email "bot@traffic.local"
           git add traffic_data.csv
-          # Only commits if the file has actually changed
           git diff --quiet && git diff --staged --quiet || git commit -m "📊 Appended new hourly traffic data"
+          
+          # This tells the bot to grab any changes you made before pushing!
+          git pull --rebase origin main
+          
           git push
