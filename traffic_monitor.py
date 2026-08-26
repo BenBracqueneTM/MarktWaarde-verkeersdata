@@ -135,9 +135,12 @@ def run_traffic_check():
                     
                     print(f"  ✅ Checked: {route_label} ({travel_time_min} min)")
                     
+
                 except Exception as e:
                     print(f"  ❌ Failed {route_label}: {e}")
-                    
+                    if 'response' in locals() and response is not None:
+                        print(f"     TomTom Error details: {response.text}")
+
                 # PAUSE FOR 1 SECOND TO PREVENT RATE LIMIT (429 ERROR)
                 time.sleep(1)
                 
