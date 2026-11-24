@@ -298906,3 +298906,4 @@ Timestamp,City,Route,Travel Time (min),Traffic Delay (min),Warning,Google Maps L
 2026-11-24 07:45:45,Heist-op-den-Berg,Route 6: Stationsstraat 95a -> Stationsstraat 11,0.8,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0746158,4.7087403&destination=51.0773098,4.7147545&travelmode=driving"
 2026-11-24 07:45:45,Heist-op-den-Berg,Route 6: Stationsstraat 11 -> Stationsstraat 95a,0.9,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0773098,4.7147545&destination=51.0746158,4.7087403&travelmode=driving"
 2026-11-24 07:45:45,Heist-op-den-Berg,Route 8: Bergstraat 169 -> Spoorwegstraat 14,1.1,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0774554,4.7157428&destination=51.0737621,4.712355&travelmode=driving"
+2026-11-24 10:45:42,Mechelen,Ring CCW 5: Hendrik Speecqvest -> Hoogstratenplein,3.0,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0217205,4.4866604&destination=51.0290022,4.4891542&travelmode=driving"
