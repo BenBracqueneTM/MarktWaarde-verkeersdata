@@ -299543,3 +299543,8 @@ Timestamp,City,Route,Travel Time (min),Traffic Delay (min),Warning,Google Maps L
 2026-11-26 11:45:48,Mechelen,Ring CCW 6: R12 (Noord) -> Kazerne Dossin,1.8,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0310895,4.4868016&destination=51.0344692,4.4792083&travelmode=driving"
 2026-11-26 11:45:48,Mechelen,Ring CW 1: Zandpoortvest -> Stationsstraat,2.3,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0285704,4.4898393&destination=51.0217517,4.4869489&travelmode=driving"
 2026-11-26 11:45:48,Mechelen,Ring CW 2: Voochtstraat -> Raghenoplein,2.3,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.028467,4.4893581&destination=51.0223561,4.4867758&travelmode=driving"
+2026-11-26 13:15:42,Mechelen,Ring CCW 1: Kon. Astridlaan -> R12 (Zuid),2.1,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0280133,4.4700838&destination=51.0206859,4.4780253&travelmode=driving"
+2026-11-26 13:15:42,Mechelen,Ring CCW 2: R12 (Zuid) -> Hendrik Speecqvest,1.2,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.020591,4.4790632&destination=51.0214784,4.4861257&travelmode=driving"
+2026-11-26 13:15:42,Mechelen,Ring CCW 4: Goswin de Stassart -> Battelsesteenweg,3.1,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0345145,4.478636&destination=51.028313,4.4702088&travelmode=driving"
+2026-11-26 13:15:42,Mechelen,Ring CCW 6: R12 (Noord) -> Kazerne Dossin,1.9,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.0310895,4.4868016&destination=51.0344692,4.4792083&travelmode=driving"
+2026-11-26 13:15:42,Mechelen,Ring CW 2: Voochtstraat -> Raghenoplein,2.3,0.0,,"https://www.google.com/maps/dir/?api=1&origin=51.028467,4.4893581&destination=51.0223561,4.4867758&travelmode=driving"
